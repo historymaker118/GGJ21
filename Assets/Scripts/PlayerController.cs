@@ -29,6 +29,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private bool isGrounded;
 
+    private Vector2 groundNormal;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -40,8 +42,7 @@ public class PlayerController : MonoBehaviour
     {
         // TODO WT: set these on hasLegs change.
         legsView.SetActive(hasLegs);
-
-        var moveSpeed = (hasLegs) ? legsMoveSpeed : baseMoveSpeed;
+        jumpView.SetActive(hasJump);
 
         capsule.size = new Vector2(
             capsule.size.x,
@@ -52,14 +53,45 @@ public class PlayerController : MonoBehaviour
             capsule.offset.x,
             (hasLegs) ? legsOffset : baseOffset
         );
+    }
 
+    private void FixedUpdate()
+    {
+        var castDistance = 0.02f; // Should ideally be casting the next position after gravity is applied
+        var hitInfo = Physics2D.CapsuleCast((Vector2)transform.position + capsule.offset, capsule.size, capsule.direction, 0.0f, Vector2.down, castDistance, ~(1 << 8));
+        Debug.DrawRay(transform.position, Vector3.down * castDistance, Color.blue);
+
+        if (hitInfo)
+        {
+            Debug.DrawRay(hitInfo.point, hitInfo.normal, Color.green);
+
+            isGrounded = Vector2.Angle(Vector2.up, hitInfo.normal) <= maxSlopeAngle;
+
+            groundNormal = hitInfo.normal;
+        }
+        else
+        {
+            isGrounded = false;
+        }
+
+        var moveSpeed = (hasLegs) ? legsMoveSpeed : baseMoveSpeed;
 
         var horiz = Input.GetAxis("Horizontal");
         if (isGrounded)
         {
+            var dir = -new Vector2(-groundNormal.y, groundNormal.x);
+
+            //var vel = rigid.velocity;
+            //vel.x = horiz * moveSpeed;
+            //rigid.velocity = vel;
+            rigid.velocity = dir * horiz * moveSpeed;
+        }
+        else
+        {
+            horiz *= 0.5f;
 
             var vel = rigid.velocity;
-            vel.x = horiz * moveSpeed;
+            vel.x += horiz * moveSpeed * Time.fixedDeltaTime;
             rigid.velocity = vel;
         }
 
@@ -69,27 +101,11 @@ public class PlayerController : MonoBehaviour
             {
                 if (Input.GetButton("Jump"))
                 {
+                    print("Jump");
                     rigid.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
                     isGrounded = false;
                 }
             }
-        }
-    }
-
-    private void FixedUpdate()
-    {
-        var castDistance = 0.02f;
-        var hitInfo = Physics2D.CapsuleCast((Vector2)transform.position + capsule.offset, capsule.size, capsule.direction, 0.0f, Vector2.down, castDistance, ~(1 << 8));
-        Debug.DrawRay(transform.position, Vector3.down * castDistance, Color.blue);
-
-        if (hitInfo)
-        {
-            Debug.DrawRay(hitInfo.point, hitInfo.normal, Color.green);
-            isGrounded = Vector2.Angle(Vector2.up, hitInfo.normal) <= maxSlopeAngle;
-        }
-        else
-        {
-            isGrounded = false;
         }
     }
 

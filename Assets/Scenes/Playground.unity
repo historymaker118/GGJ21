@@ -158,7 +158,7 @@ MonoBehaviour:
   legsMoveSpeed: 4
   legsHeight: 2
   legsOffset: 0
-  jumpForce: 4
+  jumpForce: 6
   hasLegs: 0
   hasArms: 0
   hasJump: 1
@@ -181,7 +181,7 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDrag: 0
+  m_LinearDrag: 0.1
   m_AngularDrag: 0.05
   m_GravityScale: 1
   m_Material: {fileID: 0}
