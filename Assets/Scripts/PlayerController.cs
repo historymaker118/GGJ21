@@ -44,6 +44,9 @@ public class PlayerController : MonoBehaviour
         legsView.SetActive(hasLegs);
         jumpView.SetActive(hasJump);
 
+        // TODO WT: Wall Grab and climbing
+        // TODO WT: Pick up and put down of legs, arms and jump.
+
         capsule.size = new Vector2(
             capsule.size.x,
             (hasLegs) ? legsHeight : baseHeight
