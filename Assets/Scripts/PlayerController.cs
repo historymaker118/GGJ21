@@ -40,10 +40,14 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField]
     private bool isGrounded;
+
+    [SerializeField]
     private bool canWallClimb;
 
     private Vector2 groundNormal;
-    private Vector2 wallnormal;
+
+    private bool isQPressed;
+    private bool isEPressed;
 
     private bool _partsDirty;
 
@@ -75,7 +79,7 @@ public class PlayerController : MonoBehaviour
     {
         currentMoveSpeed = baseMoveSpeed;
         currentHeight = baseHeight;
-        currentOffset = baseHeight;
+        currentOffset = baseOffset;
         isJumpEnabled = false;
         isClimbEnabled = false;
 
@@ -123,13 +127,75 @@ public class PlayerController : MonoBehaviour
             processParts();
         }
 
-        var sign = Mathf.Sign(Input.GetAxis("Horizontal"));
+        if (Mathf.Abs(Input.GetAxis("Horizontal")) > 0.1f)
+        {
+            var sign = Mathf.Sign(Input.GetAxis("Horizontal"));
 
-        legsView.transform.localScale = new Vector3(sign, 1.0f);
-        jumpView.transform.localScale = new Vector3(sign, 1.0f);
-        bodyView.transform.localScale = new Vector3(sign, 1.0f);
+            legsView.transform.localScale = new Vector3(sign, 1.0f);
+            jumpView.transform.localScale = new Vector3(sign, 1.0f);
+            bodyView.transform.localScale = new Vector3(sign, 1.0f);
+        }
         // TODO WT: Wall Grab and climbing
         // TODO WT: Pick up and put down of legs, arms and jump.
+
+
+        isQPressed = Input.GetKeyDown(KeyCode.Q);
+        isEPressed = Input.GetKeyDown(KeyCode.E);
+
+        var currentVelocity = rigid.velocity;
+
+
+        // TODO WT: Snap to wall we're climbing
+        //canWallClimb = wallHitsInfo.Select(x => Vector2.Angle(Vector2.up, x.normal)).Contains(90.0f);
+        if (isClimbEnabled && canWallClimb)
+        {
+            var verti = Input.GetAxis("Vertical") * currentMoveSpeed;
+            currentVelocity.y = Mathf.Clamp(currentVelocity.y + verti, -currentMoveSpeed, currentMoveSpeed);
+        }
+
+        var horiz = Input.GetAxis("Horizontal");
+        if (isGrounded || isClimbEnabled && canWallClimb)
+        {
+            var groundTangent = -new Vector2(-groundNormal.y, groundNormal.x);
+
+            var normalComponent = Vector2.Dot(currentVelocity, groundNormal);
+            var tangentComponent = Vector2.Dot(currentVelocity, groundTangent);
+            var tangentMovement = horiz * currentMoveSpeed;
+
+            currentVelocity += groundTangent * (tangentMovement - tangentComponent);
+
+            //var feetPos = capsule.bounds.min + Vector3.right * capsule.size.x / 2.0f;
+            //Debug.DrawRay(feetPos, groundTangent, Color.red);
+            //Debug.DrawRay(transform.position, Vector2.right * horiz, Color.white);
+
+            //var dotRight = Vector2.Dot(Vector3.right, groundTangent);
+            //Debug.DrawRay(feetPos, groundTangent * dotRight, Color.yellow);
+
+            //rigid.velocity = dir * horiz * currentMoveSpeed;
+            //var vel = rigid.velocity;
+            //vel.x = horiz * currentMoveSpeed;
+            //rigid.velocity = vel;
+        }
+        else
+        {
+            horiz *= 0.5f;
+            currentVelocity.x += horiz * currentMoveSpeed * Time.fixedDeltaTime;
+        }
+
+        rigid.velocity = currentVelocity;
+
+        if (isJumpEnabled)
+        {
+            if (isGrounded || (isClimbEnabled && canWallClimb))
+            {
+                if (Input.GetButton("Jump"))
+                {
+                    rigid.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+                    isGrounded = false;
+                    canWallClimb = false;
+                }
+            }
+        }
     }
 
     private void FixedUpdate()
@@ -137,20 +203,22 @@ public class PlayerController : MonoBehaviour
         var notPlayerMask = ~(1 << 8);
         // Ground cast.
         var castDistance = 0.02f; // Should ideally be casting the next position after gravity is applied
-        var groundHitInfo = Physics2D.CapsuleCast((Vector2)transform.position + capsule.offset, capsule.size, capsule.direction, 0.0f, Vector2.down, castDistance, notPlayerMask);
+        var groundHitsInfo = Physics2D.CapsuleCastAll((Vector2)transform.position + capsule.offset, capsule.size, capsule.direction, 0.0f, Vector2.down, castDistance, notPlayerMask);
         Debug.DrawRay(transform.position, Vector3.down * castDistance, Color.blue);
 
-        if (groundHitInfo)
+        isGrounded = false;
+        foreach (var hit in groundHitsInfo)
         {
-            Debug.DrawRay(groundHitInfo.point, groundHitInfo.normal, Color.green);
+            if (hit.collider.tag == "Pickup")
+            {
+                continue;
+            }
 
-            isGrounded = Vector2.Angle(Vector2.up, groundHitInfo.normal) <= maxSlopeAngle;
-
-            groundNormal = groundHitInfo.normal;
-        }
-        else
-        {
-            isGrounded = false;
+            if (Vector2.Angle(Vector2.up, hit.normal) <= maxSlopeAngle)
+            {
+                isGrounded = true;
+                groundNormal = hit.normal;
+            }
         }
 
         // Wall cast
@@ -161,57 +229,41 @@ public class PlayerController : MonoBehaviour
             0.0f,
             Vector2.right,
             dist * 2.0f,
-            notPlayerMask
+            ~(1 << 8)
         );
+
+        //var withoutPickups = wallHitsInfo.Where(x => x.collider.tag != "Pickup" && !x.collider.isTrigger);
 
         var couldClimbLastFrame = canWallClimb;
 
-
-        // TODO WT: Snap to wall we're climbing
-        canWallClimb = wallHitsInfo.Select(x => Vector2.Angle(Vector2.up, x.normal)).Contains(90.0f);
-        if (isClimbEnabled && canWallClimb)
+        canWallClimb = false;
+        foreach (var hit in wallHitsInfo)
         {
-            var verti = Input.GetAxis("Vertical") * currentMoveSpeed;
-            var vel = rigid.velocity;
-            vel.y = verti;
-            rigid.velocity = vel;
-        }
-
-        var horiz = Input.GetAxis("Horizontal");
-        if (isGrounded)
-        {
-            var dir = -new Vector2(-groundNormal.y, groundNormal.x);
-
-            //rigid.velocity = dir * horiz * currentMoveSpeed;
-            var vel = rigid.velocity;
-            vel.x = horiz * currentMoveSpeed;
-            rigid.velocity = vel;
-        }
-        else
-        {
-            horiz *= 0.5f;
-
-            var vel = rigid.velocity;
-            if (isClimbEnabled && canWallClimb)
+            if (hit.collider.tag == "Pickup")
             {
-                // Dont scale the movement if you're not grounded but you are wall climbing
-                vel.x += horiz * currentMoveSpeed;
-            } else
-            {
-                vel.x += horiz * currentMoveSpeed * Time.fixedDeltaTime;
+                continue;
             }
-            rigid.velocity = vel;
-        }
 
-        if (isJumpEnabled)
-        {
-            if (isGrounded || (isClimbEnabled && canWallClimb))
+            if (Vector2.Angle(Vector2.up, hit.normal) == 90.0f)
             {
-                if (Input.GetButton("Jump"))
-                {
-                    rigid.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
-                    isGrounded = false;
-                }
+                canWallClimb = true;
+            }
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        
+    }
+
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        if (other.tag == "Pickup")
+        {
+            if (isQPressed || isEPressed) {
+                var newPart = other.gameObject.GetComponent<Pickup>().part;
+                other.gameObject.GetComponent<Pickup>().SetPart((isQPressed) ? partA : partB);
+                swapPart(newPart, isQPressed);
             }
         }
     }
