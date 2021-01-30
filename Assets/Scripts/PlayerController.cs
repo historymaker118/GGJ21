@@ -192,6 +192,7 @@ public class PlayerController : MonoBehaviour
                 {
                     rigid.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
                     isGrounded = false;
+                    canWallClimb = false;
                 }
             }
         }
