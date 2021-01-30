@@ -1,14 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class PlayerController : MonoBehaviour
 {
     [Header("Current movement settings")]
-    public float currentMoveSpeed;
-    public float currentHeight;
-    public float currentOffset;
-    public bool hasJump;
+    private float currentMoveSpeed;
+    private float currentHeight;
+    private float currentOffset;
+    private bool isJumpEnabled;
+    private bool isClimbEnabled;
 
     [Header("Base movement settings")]
     public float baseMoveSpeed = 0.5f;
@@ -38,8 +40,10 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField]
     private bool isGrounded;
+    private bool canWallClimb;
 
     private Vector2 groundNormal;
+    private Vector2 wallnormal;
 
     private bool _partsDirty;
 
@@ -72,7 +76,8 @@ public class PlayerController : MonoBehaviour
         currentMoveSpeed = baseMoveSpeed;
         currentHeight = baseHeight;
         currentOffset = baseHeight;
-        hasJump = false;
+        isJumpEnabled = false;
+        isClimbEnabled = false;
 
         legsView.SetActive(false);
         jumpView.SetActive(false);
@@ -97,10 +102,11 @@ public class PlayerController : MonoBehaviour
                 legsView.SetActive(true);
                 break;
             case MovementPart.Arms:
+                isClimbEnabled = true;
                 break;
             case MovementPart.Jump:
-                hasJump = true;
-                jumpView.SetActive(hasJump);
+                isJumpEnabled = true;
+                jumpView.SetActive(isJumpEnabled);
                 break;
             case MovementPart.NONE:
                 break;
@@ -128,21 +134,47 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        var notPlayerMask = ~(1 << 8);
+        // Ground cast.
         var castDistance = 0.02f; // Should ideally be casting the next position after gravity is applied
-        var hitInfo = Physics2D.CapsuleCast((Vector2)transform.position + capsule.offset, capsule.size, capsule.direction, 0.0f, Vector2.down, castDistance, ~(1 << 8));
+        var groundHitInfo = Physics2D.CapsuleCast((Vector2)transform.position + capsule.offset, capsule.size, capsule.direction, 0.0f, Vector2.down, castDistance, notPlayerMask);
         Debug.DrawRay(transform.position, Vector3.down * castDistance, Color.blue);
 
-        if (hitInfo)
+        if (groundHitInfo)
         {
-            Debug.DrawRay(hitInfo.point, hitInfo.normal, Color.green);
+            Debug.DrawRay(groundHitInfo.point, groundHitInfo.normal, Color.green);
 
-            isGrounded = Vector2.Angle(Vector2.up, hitInfo.normal) <= maxSlopeAngle;
+            isGrounded = Vector2.Angle(Vector2.up, groundHitInfo.normal) <= maxSlopeAngle;
 
-            groundNormal = hitInfo.normal;
+            groundNormal = groundHitInfo.normal;
         }
         else
         {
             isGrounded = false;
+        }
+
+        // Wall cast
+        float dist = 0.1f;
+        var wallHitsInfo = Physics2D.BoxCastAll(
+            (Vector2)transform.position + capsule.offset - Vector2.right * dist,
+            new Vector2(capsule.size.x, capsule.size.y),
+            0.0f,
+            Vector2.right,
+            dist * 2.0f,
+            notPlayerMask
+        );
+
+        var couldClimbLastFrame = canWallClimb;
+
+
+        // TODO WT: Snap to wall we're climbing
+        canWallClimb = wallHitsInfo.Select(x => Vector2.Angle(Vector2.up, x.normal)).Contains(90.0f);
+        if (isClimbEnabled && canWallClimb)
+        {
+            var verti = Input.GetAxis("Vertical") * currentMoveSpeed;
+            var vel = rigid.velocity;
+            vel.y = verti;
+            rigid.velocity = vel;
         }
 
         var horiz = Input.GetAxis("Horizontal");
@@ -150,20 +182,30 @@ public class PlayerController : MonoBehaviour
         {
             var dir = -new Vector2(-groundNormal.y, groundNormal.x);
 
-            rigid.velocity = dir * horiz * currentMoveSpeed;
+            //rigid.velocity = dir * horiz * currentMoveSpeed;
+            var vel = rigid.velocity;
+            vel.x = horiz * currentMoveSpeed;
+            rigid.velocity = vel;
         }
         else
         {
             horiz *= 0.5f;
 
             var vel = rigid.velocity;
-            vel.x += horiz * currentMoveSpeed * Time.fixedDeltaTime;
+            if (isClimbEnabled && canWallClimb)
+            {
+                // Dont scale the movement if you're not grounded but you are wall climbing
+                vel.x += horiz * currentMoveSpeed;
+            } else
+            {
+                vel.x += horiz * currentMoveSpeed * Time.fixedDeltaTime;
+            }
             rigid.velocity = vel;
         }
 
-        if (hasJump)
+        if (isJumpEnabled)
         {
-            if (isGrounded)
+            if (isGrounded || (isClimbEnabled && canWallClimb))
             {
                 if (Input.GetButton("Jump"))
                 {
