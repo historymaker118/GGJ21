@@ -254,10 +254,6 @@ public class PlayerController : MonoBehaviour
             ~(1 << 8)
         );
 
-        //var withoutPickups = wallHitsInfo.Where(x => x.collider.tag != "Pickup" && !x.collider.isTrigger);
-
-        var couldClimbLastFrame = canWallClimb;
-
         wallOnLeft = false;
         wallOnRight = false;
 

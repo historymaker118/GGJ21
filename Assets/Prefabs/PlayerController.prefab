@@ -259,12 +259,13 @@ MonoBehaviour:
   legsHeight: 1.9
   legsOffset: -0.05
   legsView: {fileID: 3336017048219256671}
-  armsView: {fileID: 0}
+  armsView: {fileID: 1929493726109148142}
   jumpForce: 6
+  extraGravityScale: 2
   jumpView: {fileID: 3336017049277058280}
   rigid: {fileID: 3336017048122714177}
   capsule: {fileID: 3336017048122714178}
-  partA: 0
+  partA: 3
   partB: 2
   isGrounded: 0
   canWallClimb: 0

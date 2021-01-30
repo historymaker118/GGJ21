@@ -34,8 +34,13 @@ public class CameraControl : MonoBehaviour
         var camHeight = camera.orthographicSize;
         var camWidth = camHeight * camera.aspect;
 
-        x = Mathf.Clamp(x, bounds.xMin + camWidth, bounds.xMax - camWidth);
-        y = Mathf.Clamp(y, bounds.yMin + camHeight, bounds.yMax - camHeight);
+        var minX = pos.x + bounds.xMin + camWidth;
+        var maxX = pos.x + bounds.xMax - camWidth;
+        var minY = pos.y + bounds.yMin + camHeight;
+        var maxY = pos.y + bounds.yMax - camHeight;
+
+        x = Mathf.Clamp(x, minX, maxX);
+        y = Mathf.Clamp(y, minY, maxY);
 
         camTransform.position = new Vector3(x, y, -10.0f);
 
