@@ -32,6 +32,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Jump movement settings")]
     public float jumpForce = 2.0f;
+    public float extraGravityScale = 2.0f;
     public GameObject jumpView;
 
     [Header("Components")]
@@ -46,6 +47,9 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField]
     private bool canWallClimb;
+
+    private bool wallOnLeft;
+    private bool wallOnRight;
 
     private Vector2 groundNormal;
 
@@ -159,7 +163,7 @@ public class PlayerController : MonoBehaviour
         }
 
         var horiz = Input.GetAxis("Horizontal");
-        if (isGrounded || isClimbEnabled && canWallClimb)
+        if (isGrounded)
         {
             var groundTangent = -new Vector2(-groundNormal.y, groundNormal.x);
 
@@ -183,9 +187,21 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
+            var moveAmount = horiz * currentMoveSpeed;
+
+            moveAmount = (wallOnLeft) ? Mathf.Max(0.0f, moveAmount) : moveAmount;
+            moveAmount = (wallOnRight) ? Mathf.Min(0.0f, moveAmount) : moveAmount;
+
+            currentVelocity.x = moveAmount;
+
             // Air control
             //horiz *= 0.5f;
             //currentVelocity.x += horiz * currentMoveSpeed * Time.fixedDeltaTime;
+        }
+
+        if (!canWallClimb)
+        {
+            rigid.gravityScale = (rigid.velocity.y < 0.1f) ? extraGravityScale : 1.0f;
         }
 
         rigid.velocity = currentVelocity;
@@ -194,7 +210,7 @@ public class PlayerController : MonoBehaviour
         {
             if (isGrounded || (isClimbEnabled && canWallClimb))
             {
-                if (Input.GetButton("Jump"))
+                if (Input.GetButtonDown("Jump") && rigid.velocity.y <= 0.0f)
                 {
                     rigid.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
                     isGrounded = false;
@@ -242,12 +258,25 @@ public class PlayerController : MonoBehaviour
 
         var couldClimbLastFrame = canWallClimb;
 
+        wallOnLeft = false;
+        wallOnRight = false;
+
         canWallClimb = false;
         foreach (var hit in wallHitsInfo)
         {
             if (hit.collider.tag == "Pickup")
             {
                 continue;
+            }
+
+            if (hit.point.x < rigid.position.x)
+            {
+                wallOnLeft = true;
+            }
+
+            if (hit.point.x > rigid.position.x)
+            {
+                wallOnRight = true;
             }
 
             if (Vector2.Angle(Vector2.up, hit.normal) == 90.0f)
