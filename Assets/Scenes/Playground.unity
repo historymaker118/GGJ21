@@ -152,21 +152,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 755e5c7febb5d1343a67bd31f068de8d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentMoveSpeed: 4
+  currentHeight: 2
+  currentOffset: 0
+  hasJump: 1
   baseMoveSpeed: 1.5
   baseHeight: 0.5
   baseOffset: 0.5
+  maxSlopeAngle: 46
+  bodyView: {fileID: 188077689}
   legsMoveSpeed: 4
   legsHeight: 2
   legsOffset: 0
+  legsView: {fileID: 365834403}
   jumpForce: 6
-  hasLegs: 0
-  hasArms: 0
-  hasJump: 1
+  jumpView: {fileID: 1421998868}
   rigid: {fileID: 135258045}
   capsule: {fileID: 135258046}
-  legsView: {fileID: 365834403}
-  jumpView: {fileID: 1915495056}
-  maxSlopeAngle: 46
+  partA: 0
+  partB: 2
   isGrounded: 0
 --- !u!50 &135258045
 Rigidbody2D:
@@ -202,8 +206,8 @@ CapsuleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0.5}
-  m_Size: {x: 1, y: 0.5}
+  m_Offset: {x: 0, y: 0}
+  m_Size: {x: 1, y: 2}
   m_Direction: 0
 --- !u!4 &135258047
 Transform:
@@ -350,7 +354,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &365834404
 Transform:
   m_ObjectHideFlags: 0
@@ -764,7 +768,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1421998868}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.5, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1915495057}
@@ -879,8 +883,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1915495056}
   m_LocalRotation: {x: -0, y: -0, z: 0.79335374, w: 0.6087609}
-  m_LocalPosition: {x: -0.565, y: -1.306, z: 0}
-  m_LocalScale: {x: 0.34003, y: 0.59485, z: 1}
+  m_LocalPosition: {x: -0.54, y: 0.11, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1421998869}
   m_RootOrder: 0
