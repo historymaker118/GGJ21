@@ -27,6 +27,9 @@ public class PlayerController : MonoBehaviour
     public float legsOffset = 0.25f;
     public GameObject legsView;
 
+    [Header("Wall movement settings")]
+    public GameObject armsView;
+
     [Header("Jump movement settings")]
     public float jumpForce = 2.0f;
     public GameObject jumpView;
@@ -85,6 +88,7 @@ public class PlayerController : MonoBehaviour
 
         legsView.SetActive(false);
         jumpView.SetActive(false);
+        armsView.SetActive(false);
 
         processPart(partA);
         processPart(partB);
@@ -107,6 +111,7 @@ public class PlayerController : MonoBehaviour
                 break;
             case MovementPart.Arms:
                 isClimbEnabled = true;
+                armsView.SetActive(true);
                 break;
             case MovementPart.Jump:
                 isJumpEnabled = true;
@@ -178,8 +183,9 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            horiz *= 0.5f;
-            currentVelocity.x += horiz * currentMoveSpeed * Time.fixedDeltaTime;
+            // Air control
+            //horiz *= 0.5f;
+            //currentVelocity.x += horiz * currentMoveSpeed * Time.fixedDeltaTime;
         }
 
         rigid.velocity = currentVelocity;
