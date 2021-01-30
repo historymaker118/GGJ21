@@ -9,7 +9,7 @@ public class Pickup : MonoBehaviour
 
     public GameObject legView;
     public GameObject jumpView;
-    //public Sprite armview;
+    public GameObject armview;
 
     public bool isDirty;
 
@@ -31,6 +31,7 @@ public class Pickup : MonoBehaviour
         {
             legView.SetActive(false);
             jumpView.SetActive(false);
+            armview.SetActive(false);
 
             switch (part)
             {
@@ -38,6 +39,7 @@ public class Pickup : MonoBehaviour
                     legView.SetActive(true);
                     break;
                 case MovementPart.Arms:
+                    armview.SetActive(true);
                     break;
                 case MovementPart.Jump:
                     jumpView.SetActive(true);
@@ -50,5 +52,11 @@ public class Pickup : MonoBehaviour
 
             isDirty = false;
         }
+    }
+
+    public void SetPart(MovementPart part)
+    {
+        this.part = part;
+        isDirty = true;
     }
 }

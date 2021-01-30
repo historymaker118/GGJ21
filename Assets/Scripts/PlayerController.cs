@@ -40,10 +40,15 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField]
     private bool isGrounded;
+
+    [SerializeField]
     private bool canWallClimb;
 
     private Vector2 groundNormal;
     private Vector2 wallnormal;
+
+    private bool isQPressed;
+    private bool isEPressed;
 
     private bool _partsDirty;
 
@@ -75,7 +80,7 @@ public class PlayerController : MonoBehaviour
     {
         currentMoveSpeed = baseMoveSpeed;
         currentHeight = baseHeight;
-        currentOffset = baseHeight;
+        currentOffset = baseOffset;
         isJumpEnabled = false;
         isClimbEnabled = false;
 
@@ -130,6 +135,10 @@ public class PlayerController : MonoBehaviour
         bodyView.transform.localScale = new Vector3(sign, 1.0f);
         // TODO WT: Wall Grab and climbing
         // TODO WT: Pick up and put down of legs, arms and jump.
+
+
+        isQPressed = Input.GetKeyDown(KeyCode.Q);
+        isEPressed = Input.GetKeyDown(KeyCode.E);
     }
 
     private void FixedUpdate()
@@ -137,20 +146,22 @@ public class PlayerController : MonoBehaviour
         var notPlayerMask = ~(1 << 8);
         // Ground cast.
         var castDistance = 0.02f; // Should ideally be casting the next position after gravity is applied
-        var groundHitInfo = Physics2D.CapsuleCast((Vector2)transform.position + capsule.offset, capsule.size, capsule.direction, 0.0f, Vector2.down, castDistance, notPlayerMask);
+        var groundHitsInfo = Physics2D.CapsuleCastAll((Vector2)transform.position + capsule.offset, capsule.size, capsule.direction, 0.0f, Vector2.down, castDistance, notPlayerMask);
         Debug.DrawRay(transform.position, Vector3.down * castDistance, Color.blue);
 
-        if (groundHitInfo)
+        isGrounded = false;
+        foreach (var hit in groundHitsInfo)
         {
-            Debug.DrawRay(groundHitInfo.point, groundHitInfo.normal, Color.green);
+            if (hit.collider.tag == "Pickup")
+            {
+                continue;
+            }
 
-            isGrounded = Vector2.Angle(Vector2.up, groundHitInfo.normal) <= maxSlopeAngle;
-
-            groundNormal = groundHitInfo.normal;
-        }
-        else
-        {
-            isGrounded = false;
+            if (Vector2.Angle(Vector2.up, hit.normal) <= maxSlopeAngle)
+            {
+                isGrounded = true;
+                groundNormal = hit.normal;
+            }
         }
 
         // Wall cast
@@ -161,14 +172,30 @@ public class PlayerController : MonoBehaviour
             0.0f,
             Vector2.right,
             dist * 2.0f,
-            notPlayerMask
+            ~(1 << 8)
         );
+
+        //var withoutPickups = wallHitsInfo.Where(x => x.collider.tag != "Pickup" && !x.collider.isTrigger);
 
         var couldClimbLastFrame = canWallClimb;
 
+        canWallClimb = false;
+        foreach (var hit in wallHitsInfo)
+        {
+            if (hit.collider.tag == "Pickup")
+            {
+                continue;
+            }
+
+            if (Vector2.Angle(Vector2.up, hit.normal) == 90.0f)
+            {
+                canWallClimb = true;
+            }
+        }
+
 
         // TODO WT: Snap to wall we're climbing
-        canWallClimb = wallHitsInfo.Select(x => Vector2.Angle(Vector2.up, x.normal)).Contains(90.0f);
+        //canWallClimb = wallHitsInfo.Select(x => Vector2.Angle(Vector2.up, x.normal)).Contains(90.0f);
         if (isClimbEnabled && canWallClimb)
         {
             var verti = Input.GetAxis("Vertical") * currentMoveSpeed;
@@ -212,6 +239,23 @@ public class PlayerController : MonoBehaviour
                     rigid.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
                     isGrounded = false;
                 }
+            }
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        
+    }
+
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        if (other.tag == "Pickup")
+        {
+            if (isQPressed || isEPressed) {
+                var newPart = other.gameObject.GetComponent<Pickup>().part;
+                other.gameObject.GetComponent<Pickup>().SetPart((isQPressed) ? partA : partB);
+                swapPart(newPart, isQPressed);
             }
         }
     }

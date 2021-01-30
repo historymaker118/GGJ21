@@ -167,10 +167,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 755e5c7febb5d1343a67bd31f068de8d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentMoveSpeed: 4
-  currentHeight: 2
-  currentOffset: 0
-  hasJump: 1
   baseMoveSpeed: 1.5
   baseHeight: 0.5
   baseOffset: 0.5
@@ -263,7 +259,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 0.5, y: 0.5}
+  m_Size: {x: 0.25, y: 0.3125}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1

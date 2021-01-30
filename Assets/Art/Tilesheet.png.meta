@@ -4,10 +4,10 @@ TextureImporter:
   internalIDToNameTable:
   - first:
       213: 2944365851237661629
-    second: Tilesheet_0
+    second: Tilesheet_Body
   - first:
       213: 6920345975239967579
-    second: Tilesheet_1
+    second: Tilesheet_Arm
   - first:
       213: -4453708783385650304
     second: Tilesheet_2
@@ -142,7 +142,7 @@ TextureImporter:
     second: Tilesheet_45
   - first:
       213: -8000478533612898670
-    second: Tilesheet_46
+    second: Tilesheet_Legs
   - first:
       213: 3961846863631316328
     second: Tilesheet_47
@@ -441,7 +441,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Tilesheet_0
+      name: Tilesheet_Body
       rect:
         serializedVersion: 2
         x: 0
@@ -1302,7 +1302,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Tilesheet_46
+      name: Tilesheet_Legs
       rect:
         serializedVersion: 2
         x: 0
@@ -2704,6 +2704,27 @@ TextureImporter:
       bones: []
       spriteID: 72b6c81e10fe502f0800000000000000
       internalID: -1007136150289355993
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Tilesheet_Arm
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 91
+        width: 4
+        height: 5
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b538bf8bff10a0060800000000000000
+      internalID: 6920345975239967579
       vertices: []
       indices: 
       edges: []
