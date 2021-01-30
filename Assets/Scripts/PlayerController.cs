@@ -45,7 +45,6 @@ public class PlayerController : MonoBehaviour
     private bool canWallClimb;
 
     private Vector2 groundNormal;
-    private Vector2 wallnormal;
 
     private bool isQPressed;
     private bool isEPressed;
@@ -128,17 +127,74 @@ public class PlayerController : MonoBehaviour
             processParts();
         }
 
-        var sign = Mathf.Sign(Input.GetAxis("Horizontal"));
+        if (Mathf.Abs(Input.GetAxis("Horizontal")) > 0.1f)
+        {
+            var sign = Mathf.Sign(Input.GetAxis("Horizontal"));
 
-        legsView.transform.localScale = new Vector3(sign, 1.0f);
-        jumpView.transform.localScale = new Vector3(sign, 1.0f);
-        bodyView.transform.localScale = new Vector3(sign, 1.0f);
+            legsView.transform.localScale = new Vector3(sign, 1.0f);
+            jumpView.transform.localScale = new Vector3(sign, 1.0f);
+            bodyView.transform.localScale = new Vector3(sign, 1.0f);
+        }
         // TODO WT: Wall Grab and climbing
         // TODO WT: Pick up and put down of legs, arms and jump.
 
 
         isQPressed = Input.GetKeyDown(KeyCode.Q);
         isEPressed = Input.GetKeyDown(KeyCode.E);
+
+        var currentVelocity = rigid.velocity;
+
+
+        // TODO WT: Snap to wall we're climbing
+        //canWallClimb = wallHitsInfo.Select(x => Vector2.Angle(Vector2.up, x.normal)).Contains(90.0f);
+        if (isClimbEnabled && canWallClimb)
+        {
+            var verti = Input.GetAxis("Vertical") * currentMoveSpeed;
+            currentVelocity.y = Mathf.Clamp(currentVelocity.y + verti, -currentMoveSpeed, currentMoveSpeed);
+        }
+
+        var horiz = Input.GetAxis("Horizontal");
+        if (isGrounded || isClimbEnabled && canWallClimb)
+        {
+            var groundTangent = -new Vector2(-groundNormal.y, groundNormal.x);
+
+            var normalComponent = Vector2.Dot(currentVelocity, groundNormal);
+            var tangentComponent = Vector2.Dot(currentVelocity, groundTangent);
+            var tangentMovement = horiz * currentMoveSpeed;
+
+            currentVelocity += groundTangent * (tangentMovement - tangentComponent);
+
+            //var feetPos = capsule.bounds.min + Vector3.right * capsule.size.x / 2.0f;
+            //Debug.DrawRay(feetPos, groundTangent, Color.red);
+            //Debug.DrawRay(transform.position, Vector2.right * horiz, Color.white);
+
+            //var dotRight = Vector2.Dot(Vector3.right, groundTangent);
+            //Debug.DrawRay(feetPos, groundTangent * dotRight, Color.yellow);
+
+            //rigid.velocity = dir * horiz * currentMoveSpeed;
+            //var vel = rigid.velocity;
+            //vel.x = horiz * currentMoveSpeed;
+            //rigid.velocity = vel;
+        }
+        else
+        {
+            horiz *= 0.5f;
+            currentVelocity.x += horiz * currentMoveSpeed * Time.fixedDeltaTime;
+        }
+
+        rigid.velocity = currentVelocity;
+
+        if (isJumpEnabled)
+        {
+            if (isGrounded || (isClimbEnabled && canWallClimb))
+            {
+                if (Input.GetButton("Jump"))
+                {
+                    rigid.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+                    isGrounded = false;
+                }
+            }
+        }
     }
 
     private void FixedUpdate()
@@ -190,55 +246,6 @@ public class PlayerController : MonoBehaviour
             if (Vector2.Angle(Vector2.up, hit.normal) == 90.0f)
             {
                 canWallClimb = true;
-            }
-        }
-
-
-        // TODO WT: Snap to wall we're climbing
-        //canWallClimb = wallHitsInfo.Select(x => Vector2.Angle(Vector2.up, x.normal)).Contains(90.0f);
-        if (isClimbEnabled && canWallClimb)
-        {
-            var verti = Input.GetAxis("Vertical") * currentMoveSpeed;
-            var vel = rigid.velocity;
-            vel.y = verti;
-            rigid.velocity = vel;
-        }
-
-        var horiz = Input.GetAxis("Horizontal");
-        if (isGrounded)
-        {
-            var dir = -new Vector2(-groundNormal.y, groundNormal.x);
-
-            //rigid.velocity = dir * horiz * currentMoveSpeed;
-            var vel = rigid.velocity;
-            vel.x = horiz * currentMoveSpeed;
-            rigid.velocity = vel;
-        }
-        else
-        {
-            horiz *= 0.5f;
-
-            var vel = rigid.velocity;
-            if (isClimbEnabled && canWallClimb)
-            {
-                // Dont scale the movement if you're not grounded but you are wall climbing
-                vel.x += horiz * currentMoveSpeed;
-            } else
-            {
-                vel.x += horiz * currentMoveSpeed * Time.fixedDeltaTime;
-            }
-            rigid.velocity = vel;
-        }
-
-        if (isJumpEnabled)
-        {
-            if (isGrounded || (isClimbEnabled && canWallClimb))
-            {
-                if (Input.GetButton("Jump"))
-                {
-                    rigid.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
-                    isGrounded = false;
-                }
             }
         }
     }
