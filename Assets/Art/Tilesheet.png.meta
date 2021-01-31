@@ -25,7 +25,7 @@ TextureImporter:
     second: Tilesheet_6
   - first:
       213: 8533092611668943973
-    second: Tilesheet_7
+    second: Tilesheet_Jetpack
   - first:
       213: 5143637772713123625
     second: Tilesheet_8
@@ -2599,6 +2599,27 @@ TextureImporter:
       bones: []
       spriteID: b538bf8bff10a0060800000000000000
       internalID: 6920345975239967579
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Tilesheet_Jetpack
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 72
+        width: 8
+        height: 16
+      alignment: 9
+      pivot: {x: 0.34535083, y: 0.5077324}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 564a9022582ab6670800000000000000
+      internalID: 8533092611668943973
       vertices: []
       indices: 
       edges: []
