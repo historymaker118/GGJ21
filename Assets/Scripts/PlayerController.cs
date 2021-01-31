@@ -60,6 +60,8 @@ public class PlayerController : MonoBehaviour
 
     private Vector2 groundNormal;
 
+    private Vector3 checkpoint;
+
     private int isQPressed;
     private int isEPressed;
 
@@ -68,7 +70,14 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        checkpoint = transform.position;
+
         processParts();
+    }
+
+    public void Respawn()
+    {
+        transform.position = checkpoint;
     }
 
     private void OnValidate()
@@ -327,6 +336,8 @@ public class PlayerController : MonoBehaviour
                 var newPart = other.gameObject.GetComponent<Pickup>().part;
                 other.gameObject.GetComponent<Pickup>().SetPart((isQPressed > 0) ? partA : partB);
                 swapPart(newPart, isQPressed > 0);
+
+                checkpoint = other.transform.position;
 
                 isQPressed = isEPressed = 0;
             }
