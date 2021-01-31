@@ -34,7 +34,7 @@ TextureImporter:
     second: Tilesheet_9
   - first:
       213: 3443537686447430564
-    second: Tilesheet_10
+    second: Tilesheet_9slice
   - first:
       213: -1490441807187021714
     second: Tilesheet_11
@@ -2633,7 +2633,7 @@ TextureImporter:
         width: 8
         height: 8
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -2654,7 +2654,7 @@ TextureImporter:
         width: 8
         height: 8
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -2662,6 +2662,27 @@ TextureImporter:
       bones: []
       spriteID: 03e4770d8fb1dc1e0800000000000000
       internalID: -2176052289486762448
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Tilesheet_9slice
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 56
+        width: 24
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 5, y: 5, z: 5, w: 5}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4ab9e5bf747e9cf20800000000000000
+      internalID: 3443537686447430564
       vertices: []
       indices: 
       edges: []
