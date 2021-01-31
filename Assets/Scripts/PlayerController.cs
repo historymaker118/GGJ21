@@ -160,9 +160,9 @@ public class PlayerController : MonoBehaviour
             var sign = Mathf.Sign(Input.GetAxis("Horizontal"));
 
             legsView.transform.localScale = new Vector3(sign, 1.0f);
-            jumpView.transform.localScale = new Vector3(sign, 1.0f);
+            //jumpView.transform.localScale = new Vector3(sign, 1.0f);
             bodyView.transform.localScale = new Vector3(sign, 1.0f);
-            armsView.transform.localScale = new Vector3(sign, 1.0f);
+            //armsView.transform.localScale = new Vector3(sign, 1.0f);
         }
         // TODO WT: Wall Grab and climbing
         // TODO WT: Pick up and put down of legs, arms and jump.
