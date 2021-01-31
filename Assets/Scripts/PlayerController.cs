@@ -9,22 +9,24 @@ public class PlayerController : MonoBehaviour
     private float currentMoveSpeed;
     private float currentHeight;
     private float currentOffset;
-    private bool isJumpEnabled;
+    private float currentJumpForce;
     private bool isClimbEnabled;
 
     [Header("Base movement settings")]
     public float baseMoveSpeed = 0.5f;
     public float baseHeight = 0.5f;
     public float baseOffset = 0.0f;
+    public float baseBodyHeight = 0.5f;
+    public float baseJumpForce = 3.0f;
+    public GameObject bodyView;
 
     public float maxSlopeAngle;
-
-    public GameObject bodyView;
 
     [Header("Legs movement settings")]
     public float legsMoveSpeed = 2.0f;
     public float legsHeight = 1.0f;
     public float legsOffset = 0.25f;
+    public float legsBodyHeight = 1.5f;
     public GameObject legsView;
 
     [Header("Wall movement settings")]
@@ -37,7 +39,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Components")]
     public Rigidbody2D rigid;
-    public CapsuleCollider2D capsule;
+    new public BoxCollider2D collider;
 
     public MovementPart partA;
     public MovementPart partB;
@@ -53,8 +55,8 @@ public class PlayerController : MonoBehaviour
 
     private Vector2 groundNormal;
 
-    private bool isQPressed;
-    private bool isEPressed;
+    private int isQPressed;
+    private int isEPressed;
 
     private bool _partsDirty;
 
@@ -87,8 +89,12 @@ public class PlayerController : MonoBehaviour
         currentMoveSpeed = baseMoveSpeed;
         currentHeight = baseHeight;
         currentOffset = baseOffset;
-        isJumpEnabled = false;
+        currentJumpForce = baseJumpForce;
         isClimbEnabled = false;
+
+        var pos = bodyView.transform.localPosition;
+        pos.y = baseBodyHeight;
+        bodyView.transform.localPosition = pos;
 
         legsView.SetActive(false);
         jumpView.SetActive(false);
@@ -97,8 +103,8 @@ public class PlayerController : MonoBehaviour
         processPart(partA);
         processPart(partB);
 
-        capsule.size = new Vector2(capsule.size.x, currentHeight);
-        capsule.offset = new Vector2(capsule.offset.x, currentOffset);
+        collider.size = new Vector2(collider.size.x, currentHeight);
+        collider.offset = new Vector2(collider.offset.x, currentOffset);
 
         _partsDirty = false;
     }
@@ -111,6 +117,11 @@ public class PlayerController : MonoBehaviour
                 currentMoveSpeed = legsMoveSpeed;
                 currentHeight = legsHeight;
                 currentOffset = legsOffset;
+
+                var pos = bodyView.transform.localPosition;
+                pos.y = legsBodyHeight;
+                bodyView.transform.localPosition = pos;
+
                 legsView.SetActive(true);
                 break;
             case MovementPart.Arms:
@@ -118,8 +129,8 @@ public class PlayerController : MonoBehaviour
                 armsView.SetActive(true);
                 break;
             case MovementPart.Jump:
-                isJumpEnabled = true;
-                jumpView.SetActive(isJumpEnabled);
+                currentJumpForce = jumpForce;
+                jumpView.SetActive(true);
                 break;
             case MovementPart.NONE:
                 break;
@@ -149,8 +160,8 @@ public class PlayerController : MonoBehaviour
         // TODO WT: Pick up and put down of legs, arms and jump.
 
 
-        isQPressed = Input.GetKeyDown(KeyCode.Q);
-        isEPressed = Input.GetKeyDown(KeyCode.E);
+        isQPressed = Mathf.Max(0, (Input.GetKeyDown(KeyCode.Q)) ? 5 : isQPressed - 1);
+        isEPressed = Mathf.Max(0, (Input.GetKeyDown(KeyCode.E)) ? 5 : isEPressed - 1);
 
         var currentVelocity = rigid.velocity;
 
@@ -188,12 +199,17 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            var moveAmount = horiz * currentMoveSpeed;
+            if (Mathf.Abs(horiz) > 0.0f)
+            {
+                var moveAmount = horiz * currentMoveSpeed;
 
-            moveAmount = (wallOnLeft) ? Mathf.Max(0.0f, moveAmount) : moveAmount;
-            moveAmount = (wallOnRight) ? Mathf.Min(0.0f, moveAmount) : moveAmount;
+                moveAmount = (wallOnLeft) ? Mathf.Max(0.0f, moveAmount) : moveAmount;
+                moveAmount = (wallOnRight) ? Mathf.Min(0.0f, moveAmount) : moveAmount;
 
-            currentVelocity.x = moveAmount;
+                currentVelocity.x += moveAmount * Time.deltaTime * 10.0f;
+                var sign = Mathf.Sign(currentVelocity.x);
+                currentVelocity.x = Mathf.Min(Mathf.Abs(currentVelocity.x), currentMoveSpeed) * sign;
+            }
 
             // Air control
             //horiz *= 0.5f;
@@ -207,16 +223,14 @@ public class PlayerController : MonoBehaviour
 
         rigid.velocity = currentVelocity;
 
-        if (isJumpEnabled)
+        if (isGrounded || (isClimbEnabled && canWallClimb))
         {
-            if (isGrounded || (isClimbEnabled && canWallClimb))
+            print("Can Jump " + rigid.velocity.y);
+            if (Input.GetButtonDown("Jump") && rigid.velocity.y <= 0.001f)
             {
-                if (Input.GetButtonDown("Jump") && rigid.velocity.y <= 0.0f)
-                {
-                    rigid.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
-                    isGrounded = false;
-                    canWallClimb = false;
-                }
+                rigid.AddForce(Vector2.up * currentJumpForce, ForceMode2D.Impulse);
+                isGrounded = false;
+                canWallClimb = false;
             }
         }
     }
@@ -225,17 +239,20 @@ public class PlayerController : MonoBehaviour
     {
         var notPlayerMask = ~(1 << 8);
         // Ground cast.
-        var castDistance = 0.02f; // Should ideally be casting the next position after gravity is applied
-        var groundHitsInfo = Physics2D.CapsuleCastAll((Vector2)transform.position + capsule.offset, capsule.size, capsule.direction, 0.0f, Vector2.down, castDistance, notPlayerMask);
+        var castDistance = 0.02f + collider.edgeRadius; // Should ideally be casting the next position after gravity is applied
+        var groundHitsInfo = Physics2D.BoxCastAll((Vector2)transform.position + collider.offset, collider.size, 0.0f, Vector2.down, castDistance, notPlayerMask);
         Debug.DrawRay(transform.position, Vector3.down * castDistance, Color.blue);
 
         isGrounded = false;
         foreach (var hit in groundHitsInfo)
         {
+            print("hit");
             if (hit.collider.tag == "Pickup")
             {
                 continue;
             }
+
+            print("was not pickup");
 
             if (Vector2.Angle(Vector2.up, hit.normal) <= maxSlopeAngle)
             {
@@ -247,8 +264,8 @@ public class PlayerController : MonoBehaviour
         // Wall cast
         float dist = 0.1f;
         var wallHitsInfo = Physics2D.BoxCastAll(
-            (Vector2)transform.position + capsule.offset - Vector2.right * dist,
-            new Vector2(capsule.size.x, capsule.size.y),
+            (Vector2)transform.position + collider.offset - Vector2.right * dist,
+            new Vector2(collider.size.x, collider.size.y),
             0.0f,
             Vector2.right,
             dist * 2.0f,
@@ -292,10 +309,12 @@ public class PlayerController : MonoBehaviour
     {
         if (other.tag == "Pickup")
         {
-            if (isQPressed || isEPressed) {
+            if (isQPressed > 0 || isEPressed > 0) {
                 var newPart = other.gameObject.GetComponent<Pickup>().part;
-                other.gameObject.GetComponent<Pickup>().SetPart((isQPressed) ? partA : partB);
-                swapPart(newPart, isQPressed);
+                other.gameObject.GetComponent<Pickup>().SetPart((isQPressed > 0) ? partA : partB);
+                swapPart(newPart, isQPressed > 0);
+
+                isQPressed = isEPressed = 0;
             }
         }
     }

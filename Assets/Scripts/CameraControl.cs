@@ -7,20 +7,35 @@ public class CameraControl : MonoBehaviour
     public Rect bounds;
     public Color debugColor;
 
+    public float cameraSize = 9.0f;
+
     new public Camera camera;
     private Transform camTransform;
 
     public Transform target;
 
+    private Rect worldBounds;
+
     // Start is called before the first frame update
     void Start()
     {
         camTransform = camera.transform;
+
+        worldBounds = new Rect((Vector2)transform.position + bounds.position, bounds.size);
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (!worldBounds.Contains(target.transform.position))
+        {
+            return;
+        }
+
+        float lerpSpeed = 5.0f;
+
+        camera.orthographicSize = Mathf.Lerp(camera.orthographicSize, cameraSize, Time.deltaTime * lerpSpeed);
+
         var pos = (Vector2)transform.position;
         var bottomLeft = pos + bounds.min;
         var topLeft = pos + new Vector2(bounds.xMin, bounds.yMax);
@@ -42,7 +57,7 @@ public class CameraControl : MonoBehaviour
         x = Mathf.Clamp(x, minX, maxX);
         y = Mathf.Clamp(y, minY, maxY);
 
-        camTransform.position = new Vector3(x, y, -10.0f);
+        camTransform.position = Vector3.Lerp(camTransform.position, new Vector3(x, y, -10.0f), Time.deltaTime * lerpSpeed);
 
 
     }
