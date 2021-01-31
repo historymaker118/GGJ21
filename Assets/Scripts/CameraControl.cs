@@ -58,8 +58,6 @@ public class CameraControl : MonoBehaviour
         y = Mathf.Clamp(y, minY, maxY);
 
         camTransform.position = Vector3.Lerp(camTransform.position, new Vector3(x, y, -10.0f), Time.deltaTime * lerpSpeed);
-
-
     }
 
     private void OnDrawGizmos()

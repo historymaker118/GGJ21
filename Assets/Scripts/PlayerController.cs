@@ -40,6 +40,7 @@ public class PlayerController : MonoBehaviour
     [Header("Components")]
     public Rigidbody2D rigid;
     new public BoxCollider2D collider;
+    public AudioSource moveAudio;
 
     public MovementPart partA;
     public MovementPart partB;
@@ -196,9 +197,15 @@ public class PlayerController : MonoBehaviour
             //var vel = rigid.velocity;
             //vel.x = horiz * currentMoveSpeed;
             //rigid.velocity = vel;
+
+            moveAudio.pitch = Mathf.Lerp(moveAudio.pitch, Mathf.SmoothStep(0.5f, 1.0f, Mathf.Abs(horiz)), Time.deltaTime * 10.0f);
+            moveAudio.volume = Mathf.Lerp(moveAudio.volume, Mathf.SmoothStep(0.0f, 0.5f, Mathf.Abs(horiz)), Time.deltaTime * 10.0f);
         }
         else
         {
+            moveAudio.pitch = Mathf.Lerp(moveAudio.pitch, 0.5f, Time.deltaTime);
+            moveAudio.volume = Mathf.Lerp(moveAudio.volume, 0.0f, Time.deltaTime);
+
             if (Mathf.Abs(horiz) > 0.0f)
             {
                 var moveAmount = horiz * currentMoveSpeed;
