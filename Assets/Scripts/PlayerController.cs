@@ -239,7 +239,6 @@ public class PlayerController : MonoBehaviour
 
         if (isGrounded || (isClimbEnabled && canWallClimb))
         {
-            print("Can Jump " + rigid.velocity.y);
             if (Input.GetButtonDown("Jump") && rigid.velocity.y <= 0.001f)
             {
                 rigid.AddForce(Vector2.up * currentJumpForce, ForceMode2D.Impulse);
@@ -260,13 +259,10 @@ public class PlayerController : MonoBehaviour
         isGrounded = false;
         foreach (var hit in groundHitsInfo)
         {
-            print("hit");
             if (hit.collider.tag == "Pickup")
             {
                 continue;
             }
-
-            print("was not pickup");
 
             if (Vector2.Angle(Vector2.up, hit.normal) <= maxSlopeAngle)
             {
