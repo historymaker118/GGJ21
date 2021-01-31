@@ -211,7 +211,7 @@ PrefabInstance:
     - target: {fileID: 2752780331612340760, guid: 8ccf9573e43058a448b9c445c96a3d6e,
         type: 3}
       propertyPath: m_Name
-      value: Room 1
+      value: Room 1 Jumping
       objectReference: {fileID: 0}
     - target: {fileID: 2752780331612340761, guid: 8ccf9573e43058a448b9c445c96a3d6e,
         type: 3}
@@ -310,7 +310,7 @@ PrefabInstance:
     - target: {fileID: 2752780331612340760, guid: 8ccf9573e43058a448b9c445c96a3d6e,
         type: 3}
       propertyPath: m_Name
-      value: Room 3
+      value: Room 3 Running
       objectReference: {fileID: 0}
     - target: {fileID: 2752780331612340761, guid: 8ccf9573e43058a448b9c445c96a3d6e,
         type: 3}
@@ -404,7 +404,7 @@ PrefabInstance:
     - target: {fileID: 2752780331612340760, guid: 8ccf9573e43058a448b9c445c96a3d6e,
         type: 3}
       propertyPath: m_Name
-      value: Room 0
+      value: Room 0 Nothing
       objectReference: {fileID: 0}
     - target: {fileID: 2752780331612340761, guid: 8ccf9573e43058a448b9c445c96a3d6e,
         type: 3}
@@ -577,7 +577,7 @@ PrefabInstance:
     - target: {fileID: 2752780331612340760, guid: 8ccf9573e43058a448b9c445c96a3d6e,
         type: 3}
       propertyPath: m_Name
-      value: Room 4
+      value: Room 4 Everything
       objectReference: {fileID: 0}
     - target: {fileID: 2752780331612340761, guid: 8ccf9573e43058a448b9c445c96a3d6e,
         type: 3}
@@ -34016,7 +34016,7 @@ PrefabInstance:
     - target: {fileID: 2752780331612340760, guid: 8ccf9573e43058a448b9c445c96a3d6e,
         type: 3}
       propertyPath: m_Name
-      value: Room 2
+      value: Room 2 Climbing
       objectReference: {fileID: 0}
     - target: {fileID: 2752780331612340761, guid: 8ccf9573e43058a448b9c445c96a3d6e,
         type: 3}
