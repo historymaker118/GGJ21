@@ -42,6 +42,10 @@ public class PlayerController : MonoBehaviour
     new public BoxCollider2D collider;
     public AudioSource moveAudio;
 
+    public GameObject partSwapDisplay;
+    public Pickup qDisplay;
+    public Pickup eDisplay;
+
     public MovementPart partA;
     public MovementPart partB;
 
@@ -106,6 +110,9 @@ public class PlayerController : MonoBehaviour
 
         collider.size = new Vector2(collider.size.x, currentHeight);
         collider.offset = new Vector2(collider.offset.x, currentOffset);
+
+        qDisplay.SetPart(partA);
+        eDisplay.SetPart(partB);
 
         _partsDirty = false;
     }
@@ -305,6 +312,8 @@ public class PlayerController : MonoBehaviour
                 canWallClimb = true;
             }
         }
+
+        partSwapDisplay.SetActive(false);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -316,6 +325,8 @@ public class PlayerController : MonoBehaviour
     {
         if (other.tag == "Pickup")
         {
+            partSwapDisplay.SetActive(true);
+
             if (isQPressed > 0 || isEPressed > 0) {
                 var newPart = other.gameObject.GetComponent<Pickup>().part;
                 other.gameObject.GetComponent<Pickup>().SetPart((isQPressed > 0) ? partA : partB);
